@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{A06EA358-4AAC-A514-AA30-21567E59993C}") = "JogoDasPlacas", "Assembly-CSharp.csproj", "{62B7CC38-6E61-842C-634F-314683A69141}"
+EndProject
+Project("{A06EA358-4AAC-A514-AA30-21567E59993C}") = "JogoDasPlacas", "Assembly-CSharp-Editor.csproj", "{A020BD8F-C9E6-8077-6512-E132D233F71B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{62B7CC38-6E61-842C-634F-314683A69141}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62B7CC38-6E61-842C-634F-314683A69141}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62B7CC38-6E61-842C-634F-314683A69141}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62B7CC38-6E61-842C-634F-314683A69141}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A020BD8F-C9E6-8077-6512-E132D233F71B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A020BD8F-C9E6-8077-6512-E132D233F71B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A020BD8F-C9E6-8077-6512-E132D233F71B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A020BD8F-C9E6-8077-6512-E132D233F71B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal
