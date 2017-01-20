@@ -94,13 +94,13 @@ public class GameController : MonoBehaviour {
 	}
 
 
-	public void ButtonClick(int lane){
+	public void ChooseAction(Lanes lane){
 
-		Lanes laneClicked = (Lanes)lane;
+		//Lanes laneClicked = (Lanes)lane;
 
 		Lanes carLane = _playerCar._currentLane;
 		//Se clicar na mesma escolhe parar
-		if (carLane == laneClicked) {
+		if (carLane == lane) {
 			ChooseStop ();
 		} else {
 			//Um monte de codigo so pra ver pra que lado a pessoa escolheu virar
@@ -108,37 +108,37 @@ public class GameController : MonoBehaviour {
 			switch (carLane) {
 
 			case Lanes.BOTTOM:
-				if (laneClicked == Lanes.RIGHT) {
+				if (lane == Lanes.RIGHT) {
 					ChooseRight ();
 				}
-				if (laneClicked == Lanes.LEFT) {
+				if (lane == Lanes.LEFT) {
 					ChooseLeft ();
 				}
 				break;
 			
 			case Lanes.RIGHT:
-				if (laneClicked == Lanes.TOP) {
+				if (lane == Lanes.TOP) {
 					ChooseRight ();
 				}
-				if (laneClicked == Lanes.BOTTOM) {
+				if (lane == Lanes.BOTTOM) {
 					ChooseLeft ();
 				}
 				break;
 
 			case Lanes.TOP:
-				if (laneClicked == Lanes.LEFT) {
+				if (lane == Lanes.LEFT) {
 					ChooseRight ();
 				}
-				if (laneClicked == Lanes.RIGHT) {
+				if (lane == Lanes.RIGHT) {
 					ChooseLeft ();
 				}
 				break;
 
 			case Lanes.LEFT:
-				if (laneClicked == Lanes.BOTTOM) {
+				if (lane == Lanes.BOTTOM) {
 					ChooseRight ();
 				}
-				if (laneClicked == Lanes.TOP) {
+				if (lane == Lanes.TOP) {
 					ChooseLeft ();
 				}
 				break;
@@ -149,11 +149,11 @@ public class GameController : MonoBehaviour {
 
 		}
 
-
+		CheckAnswer ();
 	}
 
 	public void Reset(){
-		_guiManager.EnableButtons (true);
+		//_guiManager.EnableButtons (true);
 		_effectsController.KillAllParticles ();
 		_situationGenerator.Reset ();
 		_situationGenerator.GenerateNew (_playerCar);
@@ -202,14 +202,12 @@ public class GameController : MonoBehaviour {
 	}
 
 	void ChooseRight(){
-		_playerCar.ChangeState(CarController.States.RIGHT);
 		_guiManager.EnableButtons (false);
 		_chosenAnswer = Choices.RIGHT;
 
 	}
 
 	void ChooseLeft(){
-		_playerCar.ChangeState(CarController.States.LEFT);
 		_guiManager.EnableButtons (false);
 		_chosenAnswer = Choices.LEFT;
 
@@ -217,7 +215,6 @@ public class GameController : MonoBehaviour {
 	}
 
 	void ChooseStop(){
-		_playerCar.ChangeState(CarController.States.STOP);
 		_guiManager.EnableButtons (false);
 		_chosenAnswer = Choices.STOP;
 

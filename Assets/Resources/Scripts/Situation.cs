@@ -10,7 +10,7 @@ public class Situation : MonoBehaviour {
 	public GameObject _extraCar;
 	public float _extraCarProbability = 50;
 	public bool _parallel = false;
-	public CarController.States[] _possibleStates;
+	public NPCCar.States[] _possibleStates;
 
 	[TextArea]
 	public string _message;

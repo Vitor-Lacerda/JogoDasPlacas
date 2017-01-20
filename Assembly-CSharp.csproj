@@ -49,6 +49,7 @@
      <Compile Include="Assets\QRCodeAssets\QrCodeGenerator.cs" />
      <Compile Include="Assets\Resources\Scripts\AccidentCollider.cs" />
      <Compile Include="Assets\Resources\Scripts\CarController.cs" />
+     <Compile Include="Assets\Resources\Scripts\Checker.cs" />
      <Compile Include="Assets\Resources\Scripts\Cloud.cs" />
      <Compile Include="Assets\Resources\Scripts\EffectsController.cs" />
      <Compile Include="Assets\Resources\Scripts\Enums.cs" />
