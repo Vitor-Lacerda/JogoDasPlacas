@@ -62,6 +62,11 @@ public class GUIManager : MonoBehaviour {
 		_defeatScreen.SetActive (true);
 	}
 
+	public void ShowDefeat(string message){
+		_defeatMessage.text = message;
+		_defeatScreen.SetActive (true);
+	}
+
 	public void ShowVictory(){
 		Open (_victoryScreen);
 	}

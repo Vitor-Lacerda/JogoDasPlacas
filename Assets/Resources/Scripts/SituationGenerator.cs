@@ -57,8 +57,8 @@ public class SituationGenerator : MonoBehaviour {
 
 	public void GenerateNew(CarController car){
 		Lanes lane = car._currentLane;
-		//Situation s = _situations [UnityEngine.Random.Range (0, _situations.Count)];
-		Situation s = _situations [7];
+		Situation s = _situations [UnityEngine.Random.Range (0, _situations.Count)];
+		//Situation s = _situations [7];
 		_currentSituation = s;
 
 		switch (lane) {

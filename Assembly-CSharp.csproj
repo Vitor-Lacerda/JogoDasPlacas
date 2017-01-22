@@ -76,7 +76,7 @@
  <HintPath>C:/Program Files/Unity543/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll</HintPath>
  </Reference>
  <Reference Include="zxing.unity">
- <HintPath>C:/Users/Infosolo/Desktop/Infosolo/DETRAN/ProjetosJogos/JogoDasPlacas/Assets/QRCodeAssets/zxing.unity.dll</HintPath>
+ <HintPath>C:/Users/Godzilla Filmes/Documents/Unity/JogodasPlacas/JogoDasPlacas/Assets/QRCodeAssets/zxing.unity.dll</HintPath>
  </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

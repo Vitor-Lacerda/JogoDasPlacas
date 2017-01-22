@@ -10,12 +10,16 @@ public class CarController : MonoBehaviour {
 	public float _initialSpeed = 1;
 	public float _moveSpeed{ get; set;}
 	public float _maxSpeed = 6;
+	public float _stopSpeed = 0.1f;
 	public float _speedIncrement = 0.1f;
 	public float _turnSpeed = 2f;
 	public float _stopWaitTime = 4;
+	public float _wrongWayTime = 1;
+	float _wwTimer = 0;
 
 	public ParticleSystem _rightSignal;
 	public ParticleSystem _leftSignal;
+	public int _ultimaSeta = 0; //0 - nada, 1 - esquerda, -1 direita
 	public SpriteRenderer _turnSpriteRenderer;
 
 	public ParticleSystem _accidentParticle;
@@ -25,7 +29,6 @@ public class CarController : MonoBehaviour {
 	public Lanes _currentLane{ get; protected set;}
 	public bool _move{ get; set; }
 	bool _stoppedCar;
-
 
 	[SerializeField]
 	private GameController _gameController;
@@ -49,7 +52,7 @@ public class CarController : MonoBehaviour {
 			return;
 		MoveForward (_moveSpeed);
 		GetInput ();
-		if (_moveSpeed < 0.2f) {
+		if (_moveSpeed < _stopSpeed) {
 			_stoppedCar = true;
 		}
 	}
@@ -89,6 +92,19 @@ public class CarController : MonoBehaviour {
 		if (_accidentParticle != null) {
 			_accidentParticle.Stop ();
 		}
+		_rightSignal.Stop ();
+		_leftSignal.Stop ();
+		_ultimaSeta = 0;
+		_wwTimer = 0;
+
+	}
+
+	void NewSituation(){
+		_gameController.Reset ();
+		_rightSignal.Stop ();
+		_leftSignal.Stop ();
+		_stoppedCar = false;
+		_wwTimer = 0;
 
 	}
 
@@ -115,6 +131,7 @@ public class CarController : MonoBehaviour {
 		}
 		else{
 			signal.Play();
+			_ultimaSeta = signal == _leftSignal ? 1 : -1;
 		}
 	}
 
@@ -123,10 +140,7 @@ public class CarController : MonoBehaviour {
 			transform.position = other.GetComponent<Teleporter> ()._tpPoint.position;
 			transform.localRotation = other.GetComponent<Teleporter> ()._tpPoint.localRotation;
 			_currentLane = other.GetComponent<Teleporter> ()._lane;
-			_gameController.Reset ();
-			_rightSignal.Stop ();
-			_leftSignal.Stop ();
-			_stoppedCar = false;
+			NewSituation ();
 		}
 
 
@@ -139,6 +153,29 @@ public class CarController : MonoBehaviour {
 			}
 
 		}
+	}
+
+	void OnTriggerStay2D(Collider2D other){
+		if (other.CompareTag ("Cruzamento")) {
+			_wwTimer = 0;
+			if (_moveSpeed <= _stopSpeed) {
+				_gameController.Lose ("Bloqueou o cruzamento");
+			}
+		} else {
+			if (other.CompareTag ("Pista")) {
+				if (Quaternion.Angle(transform.localRotation, other.transform.localRotation) > 60) {
+					Debug.Log ("ContraMao");
+					_wwTimer += Time.deltaTime;
+					if (_wwTimer >= _wrongWayTime) {
+						_gameController.Lose ("Contra mao");
+					}
+				} else {
+					_wwTimer = 0;
+				}
+			}
+		}
+
+
 	}
 
 }

@@ -20,8 +20,8 @@ public class GameController : MonoBehaviour {
 
 
 
-
-
+	bool _scored = false;
+	bool _lost = false;
 	Choices _chosenAnswer;
 	int _highScore;
 	int Highscore{
@@ -149,7 +149,9 @@ public class GameController : MonoBehaviour {
 
 		}
 
-		CheckAnswer ();
+		if (!_lost) {
+			CheckAnswer ();
+		}
 	}
 
 	public void Reset(){
@@ -158,6 +160,8 @@ public class GameController : MonoBehaviour {
 		_situationGenerator.Reset ();
 		_situationGenerator.GenerateNew (_playerCar);
 		_chosenAnswer = Choices.NONE;
+		_lost = false;
+		_scored = false;
 	}
 
 	public void RestartGame(){
@@ -169,6 +173,9 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void CheckAnswer(){
+		if (_scored)
+			return;
+		_scored = true;
 		bool _rightAnswer = _situationGenerator.CheckAnswer (_chosenAnswer);
 		if (!_rightAnswer) {
 			SendHighScore ();
@@ -196,19 +203,36 @@ public class GameController : MonoBehaviour {
 
 
 	public void Lose(bool accident){
+		_lost = true;
 		Save ();
 		_playerCar._move = false;
 		_guiManager.ShowDefeat (_situationGenerator._currentSituation, _chosenAnswer, accident);
 	}
 
+
+	public void Lose(string message){
+		_lost = true;
+		Save ();
+		_playerCar._move = false;
+		_guiManager.ShowDefeat (message);
+
+	}
+
+
 	void ChooseRight(){
 		_guiManager.EnableButtons (false);
+		if (_playerCar._ultimaSeta != -1) {
+			Lose ("Nao ligou a seta");
+		}
 		_chosenAnswer = Choices.RIGHT;
 
 	}
 
 	void ChooseLeft(){
 		_guiManager.EnableButtons (false);
+		if (_playerCar._ultimaSeta != 1) {
+			Lose ("Nao ligou a seta");
+		}
 		_chosenAnswer = Choices.LEFT;
 
 
