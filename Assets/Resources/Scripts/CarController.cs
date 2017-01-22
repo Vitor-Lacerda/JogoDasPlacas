@@ -23,6 +23,8 @@ public class CarController : MonoBehaviour {
 	public SpriteRenderer _turnSpriteRenderer;
 
 	public ParticleSystem _accidentParticle;
+	public ParticleSystem _stopParticle;
+	bool _playedStopParticle;
 
 	public Sprite[] _wheelSprites;
 
@@ -54,6 +56,12 @@ public class CarController : MonoBehaviour {
 		GetInput ();
 		if (_moveSpeed < _stopSpeed) {
 			_stoppedCar = true;
+			if (!_playedStopParticle) {
+				_stopParticle.Play ();
+				_playedStopParticle = true;
+			}
+		} else {
+			_playedStopParticle = false;
 		}
 	}
 
