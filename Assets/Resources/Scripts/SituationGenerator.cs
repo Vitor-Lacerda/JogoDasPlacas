@@ -8,8 +8,18 @@ public class SituationGenerator : MonoBehaviour {
 	public List<Situation> _situations;
 
 
+
 	public Situation _currentSituation{ get; protected set; }
 
+	public float _chanceFaixa = 20;
+
+
+	public FaixaPedestre _topFaixa;
+	public FaixaPedestre _rightFaixa;
+	public FaixaPedestre _leftFaixa;
+	public FaixaPedestre _botFaixa;
+	FaixaPedestre _faixaAtiva;
+	public bool _tinhaPedestre;
 
 	public SpriteRenderer _topSign;
 	public SpriteRenderer _rightSign;
@@ -32,7 +42,7 @@ public class SituationGenerator : MonoBehaviour {
 		_rightSign.sprite = null;
 		_leftSign.sprite = null;
 		_botSign.sprite = null;
-
+		HideFaixas ();
 
 		foreach (GameObject gc in _extraObjects) {
 			Destroy (gc);
@@ -43,6 +53,7 @@ public class SituationGenerator : MonoBehaviour {
 	}
 
 	public bool CheckAnswer(Choices choice){
+		
 		if (_currentSituation == null) {
 			return false;
 		}
@@ -58,8 +69,11 @@ public class SituationGenerator : MonoBehaviour {
 	public void GenerateNew(CarController car){
 		Lanes lane = car._currentLane;
 		Situation s = _situations [UnityEngine.Random.Range (0, _situations.Count)];
-		//Situation s = _situations [7];
+		//Situation s = _situations [11];
 		_currentSituation = s;
+		if (!s._parallel && UnityEngine.Random.Range (0, 101) <= _chanceFaixa) {
+			ShowFaixas (lane);
+		}
 
 		switch (lane) {
 
@@ -83,13 +97,17 @@ public class SituationGenerator : MonoBehaviour {
 					if (s._parallel) {
 						pos = _topPos;
 					} else {
-						if (r % 2 == 0) {
-							pos = _rightPos;
+						if (s._direction == 0) {
+							if (r % 2 == 0) {
+								pos = _rightPos;
+							} else {
+								pos = _leftPos;
+							}
 						} else {
-							pos = _leftPos;
+							pos = s._direction > 0 ? _leftPos : _rightPos;
 						}
 					}
-					InstantiateExtraCar (s, pos.position, pos.localRotation, car._moveSpeed);
+					InstantiateExtraCar (s, pos.position, pos.localRotation, car);
 				}
 			}
 
@@ -115,13 +133,17 @@ public class SituationGenerator : MonoBehaviour {
 					if (s._parallel) {
 						pos = _leftPos;
 					} else {
-						if (r % 2 == 0) {
-							pos = _topPos;
+						if (s._direction == 0) {
+							if (r % 2 == 0) {
+								pos = _topPos;
+							} else {
+								pos = _botPos;
+							}
 						} else {
-							pos = _botPos;
+							pos = s._direction > 0 ? _botPos : _topPos;
 						}
 					}
-					InstantiateExtraCar (s, pos.position, pos.localRotation, car._moveSpeed);
+					InstantiateExtraCar (s, pos.position, pos.localRotation, car);
 				}
 			}
 			break;
@@ -146,13 +168,17 @@ public class SituationGenerator : MonoBehaviour {
 					if (s._parallel) {
 						pos = _rightPos;
 					} else {
-						if (r % 2 == 0) {
-							pos = _topPos;
+						if (s._direction == 0) {
+							if (r % 2 == 0) {
+								pos = _topPos;
+							} else {
+								pos = _botPos;
+							}
 						} else {
-							pos = _botPos;
+							pos = s._direction > 0 ? _topPos : _botPos;
 						}
 					}
-					InstantiateExtraCar (s, pos.position, pos.localRotation, car._moveSpeed);
+					InstantiateExtraCar (s, pos.position, pos.localRotation, car);
 				}
 			}
 
@@ -177,13 +203,17 @@ public class SituationGenerator : MonoBehaviour {
 					if (s._parallel) {
 						pos = _botPos;
 					} else {
-						if (r % 2 == 0) {
-							pos = _rightPos;
+						if (s._direction == 0) {
+							if (r % 2 == 0) {
+								pos = _rightPos;
+							} else {
+								pos = _leftPos;
+							}
 						} else {
-							pos = _leftPos;
+							pos = s._direction > 0 ? _rightPos : _leftPos;
 						}
 					}
-					InstantiateExtraCar (s, pos.position, pos.localRotation,car._moveSpeed);
+					InstantiateExtraCar (s, pos.position, pos.localRotation,car);
 				}
 			}
 
@@ -198,13 +228,58 @@ public class SituationGenerator : MonoBehaviour {
 
 	}
 
-	void InstantiateExtraCar(Situation s, Vector2 position, Quaternion rotation, float speed){
+	public void CrossStreet(){
+		if (_faixaAtiva != null) {
+			_faixaAtiva.CrossTheStreet ();
+		}
+	}
+
+	void ShowFaixas(Lanes l){
+		_topFaixa.gameObject.SetActive (true);
+		if (l == Lanes.TOP) {
+			_tinhaPedestre = _topFaixa.Initialize ();
+			_faixaAtiva = _topFaixa;
+		}
+		_rightFaixa.gameObject.SetActive (true);
+		if (l == Lanes.RIGHT) {
+			_tinhaPedestre = _rightFaixa.Initialize ();
+			_faixaAtiva = _rightFaixa;
+		}
+		_leftFaixa.gameObject.SetActive (true);
+		if (l == Lanes.LEFT) {
+			_tinhaPedestre = _leftFaixa.Initialize ();
+			_faixaAtiva = _leftFaixa;
+		}
+		_botFaixa.gameObject.SetActive (true);
+		if (l == Lanes.BOTTOM) {
+			_tinhaPedestre = _botFaixa.Initialize ();
+			_faixaAtiva = _botFaixa;
+		}
+
+	}
+
+	void HideFaixas(){
+		_topFaixa.gameObject.SetActive (false);
+		_rightFaixa.gameObject.SetActive (false);
+		_leftFaixa.gameObject.SetActive (false);
+		_botFaixa.gameObject.SetActive (false);
+
+		_faixaAtiva = null;
+
+	}
+
+	void InstantiateExtraCar(Situation s, Vector2 position, Quaternion rotation, CarController car){
 
 		GameObject ec = Instantiate (s._extraCar, position, rotation) as GameObject;
 		NPCCar npc = ec.GetComponent<NPCCar> ();
 		int r = UnityEngine.Random.Range (0, s._possibleStates.Length);
 		npc.ChangeState (s._possibleStates [r]);
-		npc._moveSpeed = speed;
+		if (!s._randomSpeed) {
+			npc._moveSpeed = s._speed == 0 ? car._moveSpeed : s._speed;
+		} else {
+			npc._moveSpeed = UnityEngine.Random.Range (s._speedLimits.x, s._speedLimits.y);
+		}
+		npc._move = true;
 		_extraObjects.Add (ec);
 
 	}

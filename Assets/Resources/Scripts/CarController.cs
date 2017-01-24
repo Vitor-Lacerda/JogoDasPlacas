@@ -5,7 +5,10 @@ public class CarController : MonoBehaviour {
 
 
 
+	[Header("Positions")]
 	public Transform _initialPos;
+
+	[Header("Parameters")]
 	public float _acceleration = 1;
 	public float _initialSpeed = 1;
 	public float _moveSpeed{ get; set;}
@@ -16,26 +19,42 @@ public class CarController : MonoBehaviour {
 	public float _stopWaitTime = 4;
 	public float _wrongWayTime = 1;
 	float _wwTimer = 0;
+	bool _wrongWay = false;
 
+
+
+	[Header("Particles")]
 	public ParticleSystem _rightSignal;
 	public ParticleSystem _leftSignal;
-	public int _ultimaSeta = 0; //0 - nada, 1 - esquerda, -1 direita
-	public SpriteRenderer _turnSpriteRenderer;
-
 	public ParticleSystem _accidentParticle;
 	public ParticleSystem _stopParticle;
-	bool _playedStopParticle;
+	
 
+	[Header("Sprites")]
 	public Sprite[] _wheelSprites;
+	public SpriteRenderer _turnSpriteRenderer;
 
-	public Lanes _currentLane{ get; protected set;}
-	public bool _move{ get; set; }
-	bool _stoppedCar;
+	[Header("Sounds")]
+	public AudioSource _accidentSound;
+	public AudioSource _turnSignalSound;
 
+	[Header("Controllers")]
 	[SerializeField]
 	private GameController _gameController;
 
+	[HideInInspector]
+	public int _ultimaSeta = 0; //0 - nada, 1 - esquerda, -1 direita
+	bool _playedStopParticle;
+	public Lanes _currentLane{ get; protected set;}
+	public bool _move{ get; set; }
+	bool _stoppedCar;
 	protected float _stopTime = 0;
+	
+
+
+
+
+
 
 
 
@@ -58,6 +77,7 @@ public class CarController : MonoBehaviour {
 			_stoppedCar = true;
 			if (!_playedStopParticle) {
 				_stopParticle.Play ();
+				_gameController.CrossStreet ();
 				_playedStopParticle = true;
 			}
 		} else {
@@ -100,8 +120,7 @@ public class CarController : MonoBehaviour {
 		if (_accidentParticle != null) {
 			_accidentParticle.Stop ();
 		}
-		_rightSignal.Stop ();
-		_leftSignal.Stop ();
+		StopTurnSignal ();
 		_ultimaSeta = 0;
 		_wwTimer = 0;
 
@@ -109,8 +128,7 @@ public class CarController : MonoBehaviour {
 
 	void NewSituation(){
 		_gameController.Reset ();
-		_rightSignal.Stop ();
-		_leftSignal.Stop ();
+		StopTurnSignal ();
 		_stoppedCar = false;
 		_wwTimer = 0;
 
@@ -125,6 +143,7 @@ public class CarController : MonoBehaviour {
 
 	public IEnumerator AccidentRoutine(){
 		_move = false;
+		_accidentSound.Play ();
 		if (_accidentParticle != null) {
 			_accidentParticle.Play ();
 		}
@@ -136,54 +155,87 @@ public class CarController : MonoBehaviour {
 	void ToggleTurnSignal(ParticleSystem signal){
 		if(signal.isPlaying){
 			signal.Stop ();	
+			_turnSignalSound.Stop ();
 		}
 		else{
 			signal.Play();
+			_turnSignalSound.Play ();
 			_ultimaSeta = signal == _leftSignal ? 1 : -1;
+		}
+	}
+
+	void StopTurnSignal(){
+		_rightSignal.Stop ();
+		_leftSignal.Stop ();
+		_turnSignalSound.Stop ();
+	}
+
+	void CountWrongWay(){
+		Debug.Log ("ContraMao");
+		_wrongWay = true;
+		_wwTimer += Time.deltaTime;
+		if (_wwTimer >= _wrongWayTime) {
+			_gameController.Lose ("Contra mao");
 		}
 	}
 
 	protected void OnTriggerEnter2D(Collider2D other){
 		if (other.CompareTag ("Exit")) {
-			transform.position = other.GetComponent<Teleporter> ()._tpPoint.position;
-			transform.localRotation = other.GetComponent<Teleporter> ()._tpPoint.localRotation;
-			_currentLane = other.GetComponent<Teleporter> ()._lane;
-			NewSituation ();
+			Teleporter tp = other.GetComponent<Teleporter> ();
+			if(tp != null){
+				if (tp._exitLane == _currentLane || _wrongWay) {
+					_gameController.Lose ("Contra Mao");
+				} else {
+					transform.position = tp._tpPoint.position;
+					transform.localRotation = tp._tpPoint.localRotation;
+					_currentLane = tp._nextLane;
+					NewSituation ();
+				}
+			}
+		}
+			
+		if(other.CompareTag("Checker")){
+			if (!_wrongWay) {
+				Lanes l = other.GetComponent<Checker> ()._lane;
+				_gameController.ChooseAction (l, _stoppedCar);
+			} else {
+				_gameController.Lose ("Contra Mao");
+			}
 		}
 
-
-		if(other.CompareTag("Checker")){
-			if (!_stoppedCar) {
-				Lanes l = other.GetComponent<Checker> ()._lane;
-				_gameController.ChooseAction (l);
-			} else {
-				_gameController.ChooseAction (_currentLane);
-			}
-
+		if (other.CompareTag ("Faixa")) {
+			_gameController.Lose("Passou errado na faixa");
 		}
 	}
 
 	void OnTriggerStay2D(Collider2D other){
+
+		if (other.CompareTag ("FaixaParada")) {
+			if (_moveSpeed <= _stopSpeed) {
+				_gameController.Lose ("Parou na faixa.");
+			}
+		}
+
 		if (other.CompareTag ("Cruzamento")) {
-			_wwTimer = 0;
 			if (_moveSpeed <= _stopSpeed) {
 				_gameController.Lose ("Bloqueou o cruzamento");
 			}
 		} else {
 			if (other.CompareTag ("Pista")) {
-				if (Quaternion.Angle(transform.localRotation, other.transform.localRotation) > 60) {
-					Debug.Log ("ContraMao");
-					_wwTimer += Time.deltaTime;
-					if (_wwTimer >= _wrongWayTime) {
-						_gameController.Lose ("Contra mao");
-					}
+				if (Quaternion.Angle (transform.localRotation, other.transform.localRotation) > 60) {
+					CountWrongWay ();
 				} else {
+					_wrongWay = false;
 					_wwTimer = 0;
 				}
 			}
 		}
 
+		if (other.CompareTag ("Canteiro")) {
+			CountWrongWay ();
+		}
 
+	
 	}
 
 }

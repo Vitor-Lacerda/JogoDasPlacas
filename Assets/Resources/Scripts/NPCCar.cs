@@ -54,6 +54,7 @@ public class NPCCar : MonoBehaviour {
 	public States _startState = States.DEFAULT;
 	public SpriteRenderer _colorSprite;
 	public bool _randomColor = true;
+
 	protected void Awake(){
 		_move = true;
 		_currentState = _startState;
@@ -180,7 +181,7 @@ public class NPCCar : MonoBehaviour {
 			if (_currentState == States.RIGHT && !_turn) {
 				_turn = true;
 				_turnSpriteRenderer.sprite = _wheelSprites [1];
-				StartCoroutine(Turn(-1, _rightTurnSpeed, transform.localEulerAngles.z -90));
+				StartCoroutine(Turn(-1, _rightTurnSpeed, transform.localEulerAngles.z - 90));
 			}
 			if (_currentState == States.LEFT && !_turn) {
 				_turn = true;
@@ -191,7 +192,7 @@ public class NPCCar : MonoBehaviour {
 
 
 		if (other.CompareTag ("Exit")) {
-			Destroy (this.gameObject);
+			//Destroy (this.gameObject);
 		}
 
 

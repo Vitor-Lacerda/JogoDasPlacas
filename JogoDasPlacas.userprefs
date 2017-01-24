@@ -1,15 +1,23 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Resources\Scripts\CarController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Resources\Scripts\SituationGenerator.cs">
     <Files>
-      <File FileName="Assets\Resources\Scripts\GameController.cs" Line="1" Column="1" />
-      <File FileName="Assets\Resources\Scripts\CarController.cs" Line="64" Column="32" />
-      <File FileName="Assets\Resources\Scripts\NPCCar.cs" Line="1" Column="1" />
-      <File FileName="Assets\Resources\Scripts\SituationGenerator.cs" Line="1" Column="1" />
+      <File FileName="Assets\Resources\Scripts\GameController.cs" Line="58" Column="28" />
+      <File FileName="Assets\Resources\Scripts\GUIManager.cs" Line="75" Column="4" />
+      <File FileName="Assets\Resources\Scripts\CarController.cs" Line="210" Column="2" />
+      <File FileName="Assets\Resources\Scripts\NPCCar.cs" Line="169" Column="2" />
+      <File FileName="Assets\Resources\Scripts\SituationGenerator.cs" Line="280" Column="83" />
+      <File FileName="Assets\Resources\Scripts\Enums.cs" Line="6" Column="2" />
+      <File FileName="Assets\Resources\Scripts\FaixaPedestre.cs" Line="31" Column="35" />
+      <File FileName="Assets\Resources\Scripts\Checker.cs" Line="1" Column="1" />
+      <File FileName="Assets\Resources\Scripts\Teleporter.cs" Line="7" Column="24" />
+      <File FileName="Assets\Resources\Scripts\Situation.cs" Line="18" Column="51" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="C:\Users\Infosolo\Desktop\Infosolo\DETRAN\ProjetosJogos\JogoDasPlacas\Assets\Resources\Scripts\GameController.cs" line="257" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

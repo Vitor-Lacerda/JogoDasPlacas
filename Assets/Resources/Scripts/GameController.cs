@@ -62,7 +62,8 @@ public class GameController : MonoBehaviour {
 
 	public void Begin(){
 		//Se tiver jogo salvo so comeca
-		Highscore = PlayerPrefs.GetInt (Configs.PLAYERPREFSKEY, 0);
+		Debug.Log(PlayerPrefs.HasKey(Configs.PLAYERPREFSKEY));
+		Highscore = PlayerPrefs.GetInt (Configs.PLAYERPREFSKEY,0);
 		if(Highscore != 0){
 			StartGame ();
 		}
@@ -94,18 +95,14 @@ public class GameController : MonoBehaviour {
 	}
 
 
-	public void ChooseAction(Lanes lane){
+	public void ChooseAction(Lanes lane, bool stopped){
 
 		//Lanes laneClicked = (Lanes)lane;
 
 		Lanes carLane = _playerCar._currentLane;
-		//Se clicar na mesma escolhe parar
-		if (carLane == lane) {
-			ChooseStop ();
-		} else {
 			//Um monte de codigo so pra ver pra que lado a pessoa escolheu virar
 			//Queria um jeito mais inteligente
-			switch (carLane) {
+		switch (carLane) {
 
 			case Lanes.BOTTOM:
 				if (lane == Lanes.RIGHT) {
@@ -145,12 +142,20 @@ public class GameController : MonoBehaviour {
 
 			default:
 				break;
-			}
-
 		}
 
 		if (!_lost) {
+			if (stopped) {
+				if (_situationGenerator._tinhaPedestre) {
+					if (_situationGenerator.CheckAnswer (Choices.STOP)) {
+						ChooseStop ();
+					}
+				} else {
+					ChooseStop ();
+				}
+			}
 			CheckAnswer ();
+
 		}
 	}
 
@@ -181,12 +186,7 @@ public class GameController : MonoBehaviour {
 			SendHighScore ();
 			Lose (false);
 		} else {
-			_sessionScore += _scoreIncrement;
-			_guiManager.UpdateScore (_sessionScore);
-			if (_sessionScore > _highScore) {
-				_highScore = _sessionScore;
-				_guiManager.UpdateHighscore (_highScore);
-			}
+			SessionScore += _scoreIncrement;
 			/*
 			if (_sessionScore >= Configs.MAXSCORE) {
 				Win ();
@@ -206,6 +206,10 @@ public class GameController : MonoBehaviour {
 		_lost = true;
 		Save ();
 		_playerCar._move = false;
+		foreach (NPCCar car in GameObject.FindObjectsOfType<NPCCar>()) 
+		{
+			car._move = false;	
+		}
 		_guiManager.ShowDefeat (_situationGenerator._currentSituation, _chosenAnswer, accident);
 	}
 
@@ -214,6 +218,10 @@ public class GameController : MonoBehaviour {
 		_lost = true;
 		Save ();
 		_playerCar._move = false;
+		foreach (NPCCar car in GameObject.FindObjectsOfType<NPCCar>()) 
+		{
+			car._move = false;	
+		}
 		_guiManager.ShowDefeat (message);
 
 	}
@@ -249,14 +257,17 @@ public class GameController : MonoBehaviour {
 		_chosenAnswer = Choices.NONE;
 	}
 
-
+	public void CrossStreet(){
+		_situationGenerator.CrossStreet ();
+	}
 
 	public void SendHighScore(){
 		_userService.SetHighScore (Highscore);
 		_userService.CallSendScore ();
 	}
 	public void Save(){
-		PlayerPrefs.SetInt (Configs.PLAYERPREFSKEY, _highScore);
+		PlayerPrefs.SetInt (Configs.PLAYERPREFSKEY, Highscore);
+		PlayerPrefs.Save ();
 	}
 
 

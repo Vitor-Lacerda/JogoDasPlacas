@@ -8,4 +8,9 @@ public class ExtrasMenu : MonoBehaviour {
 	static void ClearPlayerPrefs(){
 		PlayerPrefs.DeleteAll ();
 	}
+
+	[MenuItem("PlayerPrefs/See")]
+	static void SeePlayerPrefs(){
+		Debug.Log(PlayerPrefs.GetInt(Configs.PLAYERPREFSKEY));
+	}
 }
