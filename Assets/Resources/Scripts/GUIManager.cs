@@ -1,19 +1,19 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Globalization;
 
 public class GUIManager : MonoBehaviour {
-	[Header("Buttons")]
-	public GameObject[] _gameButtons;
+
 
 	[Space(10)]
-	[Header("Opening Screen")]
-	public GameObject _openScreen;
+
 
 	[Header("Defeat Screen")]
 	public GameObject _defeatScreen;
 	public Text _defeatMessage;
 	public Text _defeatScoreText;
+	public Text _defeatInfractionText;
 
 	[Header("Victory Screen")]
 	public GameObject _victoryScreen;
@@ -31,15 +31,41 @@ public class GUIManager : MonoBehaviour {
 
 
 	[Header("Game GUI")]
+	public GameObject _scoreImage;
+	public GameObject _highscoreImage;
 	public Text _scoreText;
 	public Text _highScoreText;
 
+	[Header("Opening Screen")]
+	public float _cameraSpeed = 0.2f;
+	public float _cameraTargetSize = 5f;
+	public GameObject _openScreen;
+	public Animator _textAnim;
+	public Animator _buttonAnim;
+
+
+
+	[Header("Image Effects")]
+	public Material _transitionMaterial;
 	public SimpleBlit _cameraBlit;
+	public Color _flashColor = Color.red;
+	public Texture _flashTexture;
+	public Color _transitionColor = Color.cyan;
+	public Color _screenColor = Color.white;
+	public Texture _transitionTex;
+	public Texture _transitionTexReverse;
+	[Range(0,1)]
+	public float _transitionIncrement = 0.1f;
+	public float _transitionWaitTime = 0.2f;
 
 	bool _losing;
 
+	NumberFormatInfo nfi;
 
 	void Start(){
+		nfi = new NumberFormatInfo ();
+		nfi.NumberDecimalSeparator = ",";
+		nfi.NumberGroupSeparator = ".";
 		Open (_openScreen);
 	}
 
@@ -53,13 +79,19 @@ public class GUIManager : MonoBehaviour {
 	}
 
 	public void ShowDefeat(Situation situation, Choices choice, bool accident){
+		
+
+
 		if (accident) {
 			_defeatMessage.text = "Você causou um acidente!";
+			_defeatInfractionText.text = "";
 		} else if (choice == Choices.STOP) {
-			_defeatMessage.text = "Você parou seu carro quando não devia. Isso pode causar acidentes!";
+			_defeatMessage.text = "Artigo 182,V: Parar o veículo na pista.";
+			_defeatInfractionText.text = GetInfractionText (5, 195.53f);
 		}
 		else {
 			_defeatMessage.text = situation._message;
+			_defeatInfractionText.text = GetInfractionText (situation._points, situation._moneyValue);
 		}
 
 		if (!_losing) {
@@ -68,26 +100,75 @@ public class GUIManager : MonoBehaviour {
 		//_defeatScreen.SetActive (true);
 	}
 
-	public void ShowDefeat(string message){
+	public void ShowDefeat(string message, int points, float value){
 		_defeatMessage.text = message;
+		_defeatInfractionText.text = GetInfractionText (points, value);
 		if (!_losing) {
 			StartCoroutine (DefeatRoutine ());
 		}
 		//_defeatScreen.SetActive (true);
+	}
+
+	string GetInfractionText(int points, float value){
+		return ("Infração " + GetSeverity (points) + ".\n" +
+		points.ToString () + " pontos na CNH.\n" +
+			"Valor: R$"+ value.ToString(nfi)); 
+	}
+
+	string GetSeverity(int points){
+		string r = "Leve";
+
+		switch (points) {
+		case 7:
+			r = "gravíssima";
+			break;
+		case 5:
+			r = "grave";
+			break;
+		case 4:
+			r = "média";
+			break;
+		default:
+			r = "leve";
+			break;
+		}
+		return r;
+	}
+
+	public IEnumerator OpeningRoutine(){
+		float z = Camera.main.orthographicSize;
+		//Close (_openScreen);
+		_scoreImage.SetActive(true);
+		_highscoreImage.SetActive (true);
+		_textAnim.enabled = true;
+		_buttonAnim.enabled = true;
+		while (_cameraTargetSize - z > 0) {
+			Camera.main.orthographicSize = z;
+			z += _cameraSpeed;
+			yield return null;
+		}
+		Camera.main.orthographicSize = _cameraTargetSize;
+		yield return null;
 	}
 
 	IEnumerator DefeatRoutine(){
+		
 		float f = 0;
 		float t = 0;
 		_losing = true;
+		_cameraBlit.SetFloat ("_DoTransition", 1);
+		_cameraBlit.SetColor ("_MainColor", _flashColor);
+		_cameraBlit.SetTexture ("_TransitionTex", _flashTexture);
+		_cameraBlit.SetFloat ("_Cutoff", 1);
+
 		while (t < 0.5f) {
 			f = Mathf.PingPong (Time.time*2, 0.5f);
-			_cameraBlit.SetFade (f);
+			_cameraBlit.SetFloat ("_Fade", f);
 			t += Time.deltaTime;
 			yield return null;
 		}
 
-		_cameraBlit.SetFade (0);
+		_cameraBlit.SetFloat ("_Fade", 0);
 		_defeatScreen.transform.localScale = new Vector3 (0, 0, 0);
 		_defeatScreen.SetActive (true);
 		_losing = false;
@@ -96,6 +177,52 @@ public class GUIManager : MonoBehaviour {
 			yield return null;
 		}
 
+		_cameraBlit.SetFloat ("_Cutoff", 0);
+		_cameraBlit.SetFloat ("_DoTransition", 0);
+		yield return null;
+	}
+
+	public IEnumerator TransitionForwardRoutine(bool loop){
+		_cameraBlit.SetFloat ("_DoTransition", 1);
+		_cameraBlit.SetColor ("_Color", _transitionColor);
+		_cameraBlit.SetColor ("_MainColor", _screenColor);
+		_cameraBlit.SetFloat ("_Fade", 1);
+		_cameraBlit.SetFloat ("_Cutoff", 0);
+		_cameraBlit.SetTexture ("_TransitionTex", _transitionTex);
+		float c = 0;
+		while (c < 1) {
+			c += _transitionIncrement;
+			_cameraBlit.SetFloat ("_Cutoff", c);
+			yield return null;
+
+		}
+			
+		yield return new WaitForSeconds (_transitionWaitTime);
+
+		if (loop) {
+			StartCoroutine (TransitionBackRoutine ());
+		}
+
+		_cameraBlit.SetFloat ("_DoTransition", 0);
+		yield return null;
+	}
+
+	public IEnumerator TransitionBackRoutine(){
+		_cameraBlit.SetFloat ("_DoTransition", 1);
+		_cameraBlit.SetColor ("_Color", _transitionColor);
+		_cameraBlit.SetColor ("_MainColor", _screenColor);
+		_cameraBlit.SetFloat ("_Fade", 1);
+		_cameraBlit.SetFloat ("_Cutoff", 1);
+		_cameraBlit.SetTexture ("_TransitionTex", _transitionTexReverse);
+		float c;
+		c = 1;
+		while (c > 0) {
+			c -= _transitionIncrement;
+			_cameraBlit.SetFloat ("_Cutoff", c);
+			yield return null;
+
+		}
+		_cameraBlit.SetFloat ("_DoTransition", 0);
 		yield return null;
 	}
 
@@ -115,11 +242,6 @@ public class GUIManager : MonoBehaviour {
 		_tutorialStart.SetActive (true);
 	}
 
-	public void EnableButtons(bool b){
-		foreach (GameObject btn in _gameButtons) {
-			btn.SetActive (b);
-		}
-	}
 
 	public void Countdown(int n){
 

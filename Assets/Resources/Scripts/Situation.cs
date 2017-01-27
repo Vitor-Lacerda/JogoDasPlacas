@@ -7,7 +7,7 @@ public class Situation : MonoBehaviour {
 	public bool _opposite = false;
 	public bool _doubled = false;
 	public Choices[] _correctChoices;
-	public GameObject _extraCar;
+	public GameObject[] _extraCar;
 	public float _extraCarProbability = 50;
 	[Tooltip("0 = random -- 1 = esquerda -- -1 = direita")]
 	[Range(-1,1)]

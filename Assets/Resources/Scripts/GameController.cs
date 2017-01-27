@@ -61,25 +61,31 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void Begin(){
+		StartCoroutine (BeginningCoroutine ());
+	}
+
+	public IEnumerator BeginningCoroutine(){
 		//Se tiver jogo salvo so comeca
-		Debug.Log(PlayerPrefs.HasKey(Configs.PLAYERPREFSKEY));
 		Highscore = PlayerPrefs.GetInt (Configs.PLAYERPREFSKEY,0);
-		if(Highscore != 0){
-			StartGame ();
-		}
-		//Se nao o botao do tutorial vai comecar
-		else{
+		bool newGame = (Highscore == 0);
+		yield return StartCoroutine (_guiManager.OpeningRoutine ());
+
+		if (newGame) {
 			Highscore = 0;
 			_guiManager.OpenTutorial ();
+		}
+		else{
+			StartGame ();
 		}
 	}
 
 	public void StartGame(){
+		SendHighScore ();
 		StartCoroutine (StartGameCoroutine ());
 	}
 
 	IEnumerator StartGameCoroutine(){
-
+		
 		_guiManager.ShowCountdown ();
 		int i = Configs.COUNTDOWNNUMBER;
 		while (i > 0) {
@@ -171,11 +177,17 @@ public class GameController : MonoBehaviour {
 
 	public void RestartGame(){
 		Save ();
-		Initialize ();
-		Begin ();
-		//SceneManager.LoadScene (0);
+		StartCoroutine (RestartRoutine());
 
 	}
+
+	IEnumerator RestartRoutine(){
+		yield return StartCoroutine (_guiManager.TransitionForwardRoutine (false));
+		Initialize ();
+		yield return StartCoroutine (_guiManager.TransitionBackRoutine ());
+		StartGame ();
+	}
+
 
 	public void CheckAnswer(){
 		if (_scored)
@@ -214,7 +226,7 @@ public class GameController : MonoBehaviour {
 	}
 
 
-	public void Lose(string message){
+	public void Lose(string message, int points, float value){
 		_lost = true;
 		Save ();
 		_playerCar._move = false;
@@ -222,24 +234,22 @@ public class GameController : MonoBehaviour {
 		{
 			car._move = false;	
 		}
-		_guiManager.ShowDefeat (message);
+		_guiManager.ShowDefeat (message, points, value);
 
 	}
 
 
 	void ChooseRight(){
-		_guiManager.EnableButtons (false);
 		if (_playerCar._ultimaSeta != -1) {
-			Lose ("Nao ligou a seta");
+			Lose ("Art. 196: Deixar de sinalizar a parada do veículo ou mudança de direção.", 5, 195.23f);
 		}
 		_chosenAnswer = Choices.RIGHT;
 
 	}
 
 	void ChooseLeft(){
-		_guiManager.EnableButtons (false);
 		if (_playerCar._ultimaSeta != 1) {
-			Lose ("Nao ligou a seta");
+			Lose ("Art. 196: Deixar de sinalizar a parada do veículo ou mudança de direção.", 5, 195.23f);
 		}
 		_chosenAnswer = Choices.LEFT;
 
@@ -247,13 +257,11 @@ public class GameController : MonoBehaviour {
 	}
 
 	void ChooseStop(){
-		_guiManager.EnableButtons (false);
 		_chosenAnswer = Choices.STOP;
 
 	}
 
 	public void ChooseNothing(){
-		_guiManager.EnableButtons (false);
 		_chosenAnswer = Choices.NONE;
 	}
 

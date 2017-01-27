@@ -3,7 +3,7 @@ using System.Collections;
 
 public class CarController : MonoBehaviour {
 
-
+	public SpriteRenderer _sprite;
 
 	[Header("Positions")]
 	public Transform _initialPos;
@@ -28,11 +28,7 @@ public class CarController : MonoBehaviour {
 	public ParticleSystem _leftSignal;
 	public ParticleSystem _accidentParticle;
 	public ParticleSystem _stopParticle;
-	
 
-	[Header("Sprites")]
-	public Sprite[] _wheelSprites;
-	public SpriteRenderer _turnSpriteRenderer;
 
 	[Header("Sounds")]
 	public AudioSource _accidentSound;
@@ -50,15 +46,6 @@ public class CarController : MonoBehaviour {
 	bool _stoppedCar;
 	protected float _stopTime = 0;
 	
-
-
-
-
-
-
-
-
-
 
 	// Use this for initialization
 	protected virtual void Awake () {
@@ -83,6 +70,15 @@ public class CarController : MonoBehaviour {
 		} else {
 			_playedStopParticle = false;
 		}
+
+		/*
+		if (_wrongWay) {
+			_sprite.color = Color.red;
+		} else {
+			_sprite.color = Color.white;
+		}
+		*/
+
 	}
 
 	void GetInput(){
@@ -170,12 +166,17 @@ public class CarController : MonoBehaviour {
 		_turnSignalSound.Stop ();
 	}
 
-	void CountWrongWay(){
-		Debug.Log ("ContraMao");
+	void CountWrongWay(bool canteiro){
+		//Debug.Log ("ContraMao");
 		_wrongWay = true;
 		_wwTimer += Time.deltaTime;
 		if (_wwTimer >= _wrongWayTime) {
-			_gameController.Lose ("Contra mao");
+			if (canteiro) {
+				_gameController.Lose ("Art. 193: Transitar com veículo em calçadas, ciclovias ou canteiros.", 7, 880.41f);
+			} else {
+				_gameController.Lose ("Art. 186,I: Transitar pela contramão em via de mão dupla, salvo ultrapassagem.", 5, 195.23f);
+
+			}
 		}
 	}
 
@@ -184,7 +185,7 @@ public class CarController : MonoBehaviour {
 			Teleporter tp = other.GetComponent<Teleporter> ();
 			if(tp != null){
 				if (tp._exitLane == _currentLane || _wrongWay) {
-					_gameController.Lose ("Contra Mao");
+					_gameController.Lose ("Art. 186,I: Transitar pela contramão em via de mão dupla, salvo ultrapassagem.", 5, 195.23f);
 				} else {
 					transform.position = tp._tpPoint.position;
 					transform.localRotation = tp._tpPoint.localRotation;
@@ -199,12 +200,16 @@ public class CarController : MonoBehaviour {
 				Lanes l = other.GetComponent<Checker> ()._lane;
 				_gameController.ChooseAction (l, _stoppedCar);
 			} else {
-				_gameController.Lose ("Contra Mao");
+				_gameController.Lose ("Art. 186,I: Transitar pela contramão em via de mão dupla, salvo ultrapassagem.", 5, 195.23f);
 			}
 		}
 
 		if (other.CompareTag ("Faixa")) {
-			_gameController.Lose("Passou errado na faixa");
+			if (other.transform.parent.GetComponent<FaixaPedestre> ()._crossStreet) {
+				_gameController.Lose ("Art. 214,II: Não deixar pedestre concluir a travessia, mesmo com sinal verde.", 7, 293.47f);
+			} else {
+				_gameController.Lose ("Art. 214,I: Deixar de dar preferência a pedestre que se encontra na faixa.", 7, 293.47f);
+			}
 		}
 	}
 
@@ -212,18 +217,20 @@ public class CarController : MonoBehaviour {
 
 		if (other.CompareTag ("FaixaParada")) {
 			if (_moveSpeed <= _stopSpeed) {
-				_gameController.Lose ("Parou na faixa.");
+				_gameController.Lose ("Art. 182,VI: Parar o veículo na faixa de pedestres.", 3, 88.38f);
 			}
 		}
 
 		if (other.CompareTag ("Cruzamento")) {
 			if (_moveSpeed <= _stopSpeed) {
-				_gameController.Lose ("Bloqueou o cruzamento");
+				_gameController.Lose ("Art. 182,VII: Parar o veículo na área de cruzamento.", 4, 130.16f);
 			}
+			_wrongWay = false;
+			_wwTimer = 0;
 		} else {
 			if (other.CompareTag ("Pista")) {
-				if (Quaternion.Angle (transform.localRotation, other.transform.localRotation) > 60) {
-					CountWrongWay ();
+				if (Mathf.Abs(Quaternion.Angle (transform.localRotation, other.transform.localRotation)) > 60) {
+					CountWrongWay (false);
 				} else {
 					_wrongWay = false;
 					_wwTimer = 0;
@@ -232,10 +239,17 @@ public class CarController : MonoBehaviour {
 		}
 
 		if (other.CompareTag ("Canteiro")) {
-			CountWrongWay ();
+			CountWrongWay (true);
 		}
 
 	
+	}
+
+	void OnTriggerExit2D(Collider2D other){
+		if (other.CompareTag ("Pista")) {
+			_wrongWay = false;
+			_wwTimer = 0;
+		}
 	}
 
 }

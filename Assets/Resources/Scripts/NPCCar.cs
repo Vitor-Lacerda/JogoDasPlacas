@@ -31,11 +31,8 @@ public class NPCCar : MonoBehaviour {
 
 	public ParticleSystem _rightSignal;
 	public ParticleSystem _leftSignal;
-	public SpriteRenderer _turnSpriteRenderer;
-
 	public ParticleSystem _accidentParticle;
 
-	public Sprite[] _wheelSprites;
 
 	public States _currentState { get; set; }
 	public Lanes _currentLane{ get; protected set;}
@@ -52,15 +49,11 @@ public class NPCCar : MonoBehaviour {
 
 
 	public States _startState = States.DEFAULT;
-	public SpriteRenderer _colorSprite;
-	public bool _randomColor = true;
 
 	protected void Awake(){
 		_move = true;
 		_currentState = _startState;
-		if (_randomColor) {
-			_colorSprite.color = Random.ColorHSV ();
-		}
+
 	}
 
 	public void Reset(){
@@ -147,7 +140,6 @@ public class NPCCar : MonoBehaviour {
 		} else {
 			_rightSignal.Stop ();
 			_leftSignal.Stop ();
-			_turnSpriteRenderer.sprite = _wheelSprites [0];
 
 		}
 
@@ -180,12 +172,10 @@ public class NPCCar : MonoBehaviour {
 		if (other.CompareTag ("Curva")) {
 			if (_currentState == States.RIGHT && !_turn) {
 				_turn = true;
-				_turnSpriteRenderer.sprite = _wheelSprites [1];
 				StartCoroutine(Turn(-1, _rightTurnSpeed, transform.localEulerAngles.z - 90));
 			}
 			if (_currentState == States.LEFT && !_turn) {
 				_turn = true;
-				_turnSpriteRenderer.sprite = _wheelSprites [2];
 				StartCoroutine(Turn(1, _leftTurnSpeed, transform.localEulerAngles.z + 90));
 			}
 		}

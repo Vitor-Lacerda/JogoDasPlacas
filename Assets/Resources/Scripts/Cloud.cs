@@ -21,7 +21,9 @@ public class Cloud : MonoBehaviour {
 
 	void Update () {
 
-		if (Time.time - _time <= _delayTime) {
+		_time += Time.deltaTime;
+
+		if (_time <= _delayTime) {
 			return;
 		}
 
@@ -39,6 +41,6 @@ public class Cloud : MonoBehaviour {
 		_moveSpeed = Random.Range (_speedRange.x, _speedRange.y)*direction;
 		transform.localScale = new Vector3 (Random.Range (_scaleRange.x, _scaleRange.y), Random.Range (_scaleRange.x, _scaleRange.y),1);
 		_delayTime = Random.Range (_delayRange.x, _delayRange.y);
-		_time = Time.time;
+		_time = 0;
 	}
 }

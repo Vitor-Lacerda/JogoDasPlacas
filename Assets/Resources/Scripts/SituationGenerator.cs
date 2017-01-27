@@ -69,7 +69,7 @@ public class SituationGenerator : MonoBehaviour {
 	public void GenerateNew(CarController car){
 		Lanes lane = car._currentLane;
 		Situation s = _situations [UnityEngine.Random.Range (0, _situations.Count)];
-		//Situation s = _situations [11];
+		//Situation s = _situations [4];
 		_currentSituation = s;
 		if (!s._parallel && UnityEngine.Random.Range (0, 101) <= _chanceFaixa) {
 			ShowFaixas (lane);
@@ -269,8 +269,8 @@ public class SituationGenerator : MonoBehaviour {
 	}
 
 	void InstantiateExtraCar(Situation s, Vector2 position, Quaternion rotation, CarController car){
-
-		GameObject ec = Instantiate (s._extraCar, position, rotation) as GameObject;
+		int i = UnityEngine.Random.Range (0, s._extraCar.Length);
+		GameObject ec = Instantiate (s._extraCar[i], position, rotation) as GameObject;
 		NPCCar npc = ec.GetComponent<NPCCar> ();
 		int r = UnityEngine.Random.Range (0, s._possibleStates.Length);
 		npc.ChangeState (s._possibleStates [r]);
